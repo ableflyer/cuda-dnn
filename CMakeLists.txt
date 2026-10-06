@@ -15,7 +15,7 @@ set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
 
 # Source configuration
-add_executable(cuda_app main.cpp kernel.cu src/tensor.cu)
+add_executable(cuda_app main.cpp kernel.cu src/tensor.cu src/matmul.cu)
 
 target_include_directories(cuda_app PRIVATE src)
 # Let CMake 4.4 automatically discover and optimize compilation 
