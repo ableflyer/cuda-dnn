@@ -14,7 +14,7 @@ set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
 
 # Source configuration
-add_executable(cuda_app main.cpp kernel.cu)
+add_executable(cuda_app main.cpp kernel.cu src/cuda_utils.cuh src/tensor.cu src/tensor.cuh)
 
 # Let CMake 4.4 automatically discover and optimize compilation 
 # matching your specific local graphics card architecture
