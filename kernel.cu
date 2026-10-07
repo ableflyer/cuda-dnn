@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cuda_runtime.h>
 #include "tensor.cuh"
+#include "matmul.cuh"
 
 // 1. The GPU Kernel (Runs on the graphics card)
 __global__ void hello_from_gpu(float* d_data, int size) {
@@ -13,18 +14,32 @@ __global__ void hello_from_gpu(float* d_data, int size) {
 
 // 2. The Host Wrapper Function (Runs on the CPU, called by main.cpp)
 extern "C" void run_kernel() {
-    std::vector<float> h = {10, 11, 12, 20, 21, 22};
-    Tensor t;
+    std::vector<float> h_a = {1,2,3,4,5,6}, h_b = {1, 0, 1, 0, 1, 0, 1, 0, 1};
+    Tensor a, b, c;
 
-    t.allocate(2, 2);
-    t.allocate(2, 3); // this is to test if it actually releases the previous one
-    std::cout << t.rows << " " << t.cols << " " << t.bytes() << std::endl;
-    t.from_host(h);
+    a.allocate(2,3);
+    b.allocate(3,3);
+    
+    c.allocate(2,3);
+
+    a.from_host(h_a);
+    b.from_host(h_b);
 
     std::cout << "[CPU] Launching GPU kernel now..." << std::endl;
 
     // Launch the kernel with 1 block of 5 parallel threads
-    hello_from_gpu<<<1, 6>>>(t.data, (t.rows * t.cols));
+    matmul(a, b, c);
+
+    int rows = c.rows;
+    int columns = c.cols;
+    std::vector<float> res = c.to_host();
+
+    for(int i = 0; i < rows; i++){
+        for(int j = 0; j < columns; j++){
+            std::cout << res[i*columns+j] << " ";
+        }
+        std::cout << "\n";
+    }
 
     // Force the CPU to wait until the GPU completes its work
     cudaError_t err = cudaDeviceSynchronize();
@@ -36,7 +51,8 @@ extern "C" void run_kernel() {
         std::cout << "[CPU] GPU kernel finished execution successfully!" << std::endl;
     }
 
-    t.release();
-    t.release();
-    std::cout << t.rows << " " << t.cols << " " << t.bytes() << std::endl;
+    a.release();
+    b.release();
+    c.release();
+    KERNEL_CHECK();
 }
