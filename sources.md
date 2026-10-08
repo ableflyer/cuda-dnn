@@ -1,1 +1,2 @@
 1. [Recreating PyTorch from Scratch](https://medium.com/data-science/recreating-pytorch-from-scratch-with-gpu-support-and-automatic-differentiation-8f565122a3cc)
+2. [FastSoftmax by SzymonOzog](https://github.com/SzymonOzog/FastSoftmax)

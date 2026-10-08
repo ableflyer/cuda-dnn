@@ -1,8 +1,6 @@
 #include <iostream>
 #include <cuda_runtime.h>
-#include "tensor.cuh"
-#include "matmul.cuh"
-#include "ReLU.cuh"
+#include "softmax.cuh"
 
 // 1. The GPU Kernel (Runs on the graphics card)
 __global__ void hello_from_gpu(float* d_data, int size) {
@@ -16,13 +14,14 @@ __global__ void hello_from_gpu(float* d_data, int size) {
 // 2. The Host Wrapper Function (Runs on the CPU, called by main.cpp)
 extern "C" void run_kernel() {
     std::vector<float> h_a = {1,2,3,4,5,6}, h_b = {1, 0, -1, 0, 1, 0, -1, 0, 1};
-    Tensor a, b, c, d;
+    Tensor a, b, c, d, e;
 
     a.allocate(2,3);
     b.allocate(3,3);
     
     c.allocate(2,3);
     d.allocate(2,3);
+    e.allocate(2,3);
 
     a.from_host(h_a);
     b.from_host(h_b);
@@ -33,9 +32,11 @@ extern "C" void run_kernel() {
     matmul(a, b, c);
 
     ReLUForward(c, d);
-    int rows = d.rows;
-    int columns = d.cols;
-    std::vector<float> res = d.to_host();
+
+    softmax(d, e);
+    int rows = e.rows;
+    int columns = e.cols;
+    std::vector<float> res = e.to_host();
 
     for(int i = 0; i < rows; i++){
         for(int j = 0; j < columns; j++){
@@ -58,5 +59,6 @@ extern "C" void run_kernel() {
     b.release();
     c.release();
     d.release();
+    e.release();
     KERNEL_CHECK();
 }
