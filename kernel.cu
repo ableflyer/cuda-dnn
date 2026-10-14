@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cuda_runtime.h>
-#include "softmax.cuh"
+#include "bias_add.cuh"
 
 // 1. The GPU Kernel (Runs on the graphics card)
 __global__ void hello_from_gpu(float* d_data, int size) {
@@ -13,8 +13,8 @@ __global__ void hello_from_gpu(float* d_data, int size) {
 
 // 2. The Host Wrapper Function (Runs on the CPU, called by main.cpp)
 extern "C" void run_kernel() {
-    std::vector<float> h_a = {1,2,3,4,5,6}, h_b = {1, 0, -1, 0, 1, 0, -1, 0, 1};
-    Tensor a, b, c, d, e;
+    std::vector<float> h_a = {1,2,3,4,5,6}, h_b = {5,7,7,9,11,13,16,18,20}, h_bias = {-1, 1, 1};
+    Tensor a, b, c, d, e, bias_ten;
 
     a.allocate(2,3);
     b.allocate(3,3);
@@ -23,13 +23,18 @@ extern "C" void run_kernel() {
     d.allocate(2,3);
     e.allocate(2,3);
 
+    bias_ten.allocate(1,3);
+
     a.from_host(h_a);
     b.from_host(h_b);
+    bias_ten.from_host(h_bias);
 
     std::cout << "[CPU] Launching GPU kernel now..." << std::endl;
 
     // Launch the kernel with 1 block of 5 parallel threads
     matmul(a, b, c);
+
+    bias(c, bias_ten);
 
     ReLUForward(c, d);
 
